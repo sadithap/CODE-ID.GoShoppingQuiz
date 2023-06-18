@@ -3,7 +3,7 @@ import indexCtrl from "../controller/indexCtrl";
 
 const router = Router()
 
-router.post('/signup',indexCtrl.userCtrl.createUser)
-router.post('/signin',indexCtrl.userCtrl.userLogin)
+router.post('/add',indexCtrl.userCtrl.createUser)
+router.get('/',indexCtrl.userCtrl.findAll)
 
 export default router

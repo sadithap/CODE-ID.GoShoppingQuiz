@@ -1,45 +1,84 @@
 import { literal, fn } from "../../schema/init-models";
 
-const addOrder = async (req, res) => {
+const createOrder = async (req,res) => {
     try {
-        // const username
-        // const product
-        // const qty
-        const user = await req.context.models.users.findOne({
-            where: {username: req.body.username}
-        });
-        const product = await req.context.models.product.findOne({
-            where : {name:req.body.product}
-        });
-        // console.log(product.product_id);
-        // console.log(`harga satuan = ${product.price}\ntotal = ${product.price*req.body.qty}`)
-        if((product.qty-req.body.qty)<0){
-            return res.status(404).json({ message: 'Item tidak cukup' });
+        const cart = await req.context.models.cart.findAll();
+        if(cart.length===0){
+            return res.status(404).json({ message: 'belanja dulu' });
         }
-        const price=product.price*req.body.qty;
+        let total=0;
+        cart.forEach((data) => {
+            total+=parseInt(data.subtotal);
+        });
+        const user = await req.context.models.users.findOne({
+            where : {username: req.body.username}
+        });
         const order = await req.context.models.orders.create({
-            user_id: user.id,
-            totalproduct: req.body.qty,
-            totalprice: price
+            userid : user.userid,
+            totalprice : total,
+            status : `OPEN`
         });
-        const order_detail = await req.context.models.order_detail.create({
-            order_id: order.order_id,
-            product_id: product.product_id,
-            quantity: req.body.qty
+        const orderline = cart.map((data) =>({
+            product : data.product,
+            qty : data.qty,
+            subtotal : data.subtotal,
+            orderid : order.orderid
+        }));
+
+        const orderlineitem = await req.context.models.orderlineitem.bulkCreate(orderline);
+        const deletecart = await req.context.models.cart.destroy({
+            where : {}
         });
-        const currentQty=product.qty-req.body.qty;
-        const rows = await req.context.models.product.update({
-            qty: currentQty,
-        },{ 
-            returning: true, 
-            where: { product_id: product.product_id } 
-        });
-        return res.send(rows);
+        return res.send(order);
     } catch (error) {
         return res.send(error);
     }
-};
+}
+
+const closeOrder = async (req,res) => {
+    try {
+        const order = await req.context.models.orders.update({
+            status : `CLOSED`
+        },
+        {
+            returning: true, where: {status: `OPEN`}
+          })
+        const deletelineitem = await req.context.models.orderlineitem.destroy({
+            where : {}
+        });
+        return res.send(order)
+    } catch (error) {
+        return res.send(error)
+    }
+}
+
+const cancelOrder = async (req,res) => {
+    try {
+        const itemline = await req.context.models.orderlineitem.findAll();
+        for(const data of itemline){
+            await req.context.models.product.increment({
+                stock: data.qty
+            },{
+                where: {prodid : data.product}
+            })
+        }
+        const order = await req.context.models.orders.update({
+            status : `CANCELLED`
+        },
+        {
+            returning: true, where: {status: `OPEN`}
+        });
+        const deletelineitem = await req.context.models.orderlineitem.destroy({
+            where : {}
+        });
+        return res.send(order);
+    } catch (error) {
+        return res.send(error);
+    }
+}
 
 export default {
-    addOrder
+    createOrder,
+    closeOrder,
+    cancelOrder
   };

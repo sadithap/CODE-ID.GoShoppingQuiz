@@ -1,11 +1,11 @@
 import userRoute from './userRoute'
-import customerRoute from './customerRoute'
+import cartRoute from './cartRoute'
 import productRoute from './productRoute'
 import orderRoute from './orderRoute'
 
 export default {
     userRoute,
-    customerRoute,
+    cartRoute,
     productRoute,
     orderRoute
 }

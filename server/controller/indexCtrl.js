@@ -1,11 +1,11 @@
 import userCtrl from "./userCtrl";
-import customerCtrl from "./customerCtrl";
+import cartCtrl from "./cartCtrl";
 import productCtrl from "./productCtrl";
 import orderCtrl from "./orderCtrl";
 
 export default {
     userCtrl,
-    customerCtrl,
+    cartCtrl,
     productCtrl,
     orderCtrl
 }

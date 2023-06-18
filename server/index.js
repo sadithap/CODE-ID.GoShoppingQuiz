@@ -22,6 +22,10 @@ app.use(async(req,res,next)=> {
 })
 
 // app.use('/auth',routes.userRoute)
+app.use('/product',routes.productRoute)
+app.use('/user',routes.userRoute)
+app.use('/cart',routes.cartRoute)
+app.use('/order',routes.orderRoute)
 
 const dropDatabaseSync = false
 

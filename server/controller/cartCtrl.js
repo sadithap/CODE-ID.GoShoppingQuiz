@@ -1,41 +1,56 @@
 import { sequelize } from "../../schema/init-models";
 
 
-const findAll = async (req, res) => {
-  try {
-    const rows = await req.context.models.product.findAll();
-    return res.send(rows);
-  } catch (error) {
-    return res.send(error);
-  }
-};
 
-const findAllCate = async (req,res) => {
+const findAll = async (req,res) => {
   try {
-    const rows = await req.context.models.category.findAll();
+    const rows = await req.context.models.itemproduct.findAll();
     return res.send(rows);
   } catch (error) {
     return res.send(error);
   }
 }
 
-const create = async (req, res) => {
+const addToCart = async (req,res) => {
   try {
-    const category = await req.context.models.category.findOne({
-        where: {catename: req.body.category},
+    const product = await req.context.models.product.findOne({
+      where : {name: req.body.product}
     });
-    console.log(category.cateid);
-    const rows = await req.context.models.product.create({
-      name: req.body.name,
-      category: category.cateid,
-      stock: req.body.stock,
-      price: req.body.price,
+    if(product.stock===0){
+      return res.status(404).json({ message: 'produk kosong' });
+    }
+    const minusQty=product.stock-req.body.qty;
+    if(minusQty<0){
+      return res.status(404).json({ message: 'stok tidak cukup' });
+    }
+    const user = await req.context.models.users.findOne({
+      where: {username:req.body.username}
     });
-    return res.send(rows);
+    const subPrice=(parseInt(product.price))*req.body.qty;
+    console.log(product.price);
+    const item = await req.context.models.itemproduct.create({
+      product : product.prodid,
+      qty: req.body.qty,
+      subtotal: subPrice,
+      userid: user.userid
+    });
+    const cart = await req.context.models.cart.create({
+      product : product.prodid,
+      qty: req.body.qty,
+      subtotal: subPrice,
+      userid: user.userid
+    });
+    const newQty = await req.context.models.product.update({
+      stock: minusQty
+    },
+    {
+      returning: true, where: {prodid: product.prodid}
+    });
+    return res.send(cart);
   } catch (error) {
     return res.send(error);
   }
-};
+}
 
 // const update = async (req, res) => {
 //   try {
@@ -75,6 +90,5 @@ const create = async (req, res) => {
 // }
 export default {
   findAll,
-  findAllCate,
-  create
+  addToCart
 };

@@ -27,7 +27,7 @@ export default class product extends Model {
       allowNull: true
     },
     price: {
-      type: DataTypes.DECIMAL(19,4),
+      type: DataTypes.DECIMAL,
       allowNull: true
     }
   }, {

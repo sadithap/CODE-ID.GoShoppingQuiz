@@ -13,7 +13,7 @@ export default class orders extends Model {
     orderno: {
       type: DataTypes.STRING(15),
       allowNull: true,
-      defaultValue: "(PO-"
+      defaultValue: sequelize.literal(`('PO-'::text || to_char(nextval('po_sequence'::regclass), 'FM0000'::text))`)
     },
     userid: {
       type: DataTypes.UUID,
