@@ -5,6 +5,10 @@
   "repository": "https://github.com/sadithap/CODE-ID.GoShoppingQuiz.git",
   "author": "I Gede Ketut Saditha Putra",
   "license": "MIT",
+  "scripts": {
+    "start": "nodemon --exec babel-node ./server/index.js",
+    "db": "sequelize-auto -o ./schema -d GoShopping -h localhost -u postgres -p 5432 -x admin -e postgres -l esm"
+  },
   "dependencies": {
     "bcrypt": "^5.1.0",
     "compression": "^1.7.4",
